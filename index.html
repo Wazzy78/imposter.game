@@ -6,79 +6,75 @@
   <title>Imposter Word Game</title>
   <style>
     :root { font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif; }
-    body { margin: 0; background: #0b1020; color: #e8ecff; }
+    body { margin: 0; background: #0b1020; color: #e8ecff; min-height: 100vh; }
     .wrap { max-width: 860px; margin: 0 auto; padding: 18px; }
-    .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 18px; padding: 16px; box-shadow: 0 12px 30px rgba(0,0,0,0.35); }
-    h1 { margin: 0 0 8px; font-size: 22px; }
-    p { margin: 6px 0 12px; line-height: 1.45; color: rgba(232,236,255,0.82); }
-    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-    @media (max-width: 740px){ .row { grid-template-columns: 1fr; } }
-    label { display: block; font-size: 13px; opacity: .9; margin-bottom: 6px; }
+    .card { 
+      background: rgba(255,255,255,0.06); 
+      border: 1px solid rgba(255,255,255,0.12); 
+      border-radius: 18px; 
+      padding: 20px; 
+      box-shadow: 0 12px 30px rgba(0,0,0,0.35); 
+      backdrop-filter: blur(10px);
+    }
+    h1 { margin: 0 0 8px; font-size: 24px; color: #fff; text-align: center; }
+    p { margin: 6px 0 16px; line-height: 1.5; color: rgba(232,236,255,0.7); text-align: center; }
+    
+    .row { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px; }
+    @media (max-width: 600px){ .row { grid-template-columns: 1fr; } }
+    
+    label { display: block; font-size: 14px; font-weight: 600; margin-bottom: 6px; color: #94a3b8; }
     input, select, textarea {
-      width: 100%;
-      padding: 10px 12px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(0,0,0,0.25);
-      color: #e8ecff;
-      outline: none;
+      width: 100%; box-sizing: border-box; padding: 12px;
+      border-radius: 12px; border: 1px solid rgba(255,255,255,0.15);
+      background: rgba(0,0,0,0.3); color: #fff; font-size: 16px;
     }
-    textarea { min-height: 110px; resize: vertical; }
+    textarea { min-height: 120px; resize: vertical; }
+    
+    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 15px; }
     button {
-      padding: 10px 14px;
-      border-radius: 12px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(255,255,255,0.10);
-      color: #e8ecff;
-      cursor: pointer;
-      font-weight: 600;
+      flex: 1; padding: 12px 18px; border-radius: 12px; border: none;
+      cursor: pointer; font-weight: 700; transition: 0.2s; font-size: 15px;
     }
-    button:hover { background: rgba(255,255,255,0.16); }
-    .btns { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 12px; }
+    #startBtn { background: #3b82f6; color: white; }
+    #startBtn:hover { background: #2563eb; }
+    #resetBtn { background: rgba(255,255,255,0.1); color: white; }
+    
+    .pill-box { display: flex; flex-wrap: wrap; gap: 8px; margin: 15px 0; }
     .pill {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 8px 12px; border-radius: 999px;
-      background: rgba(255,255,255,0.08);
-      border: 1px solid rgba(255,255,255,0.12);
-      font-size: 13px;
+      padding: 6px 12px; border-radius: 20px; font-size: 12px;
+      background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1);
     }
-    .danger { border-color: rgba(255,80,80,0.35); background: rgba(255,80,80,0.10); }
-    .ok { border-color: rgba(120,255,170,0.35); background: rgba(120,255,170,0.10); }
-    .stage { margin-top: 14px; }
-    .big {
-      margin-top: 10px;
-      border-radius: 18px;
-      border: 1px solid rgba(255,255,255,0.18);
-      background: rgba(0,0,0,0.28);
-      padding: 18px;
-      min-height: 140px;
-      display: grid;
-      place-items: center;
-      text-align: center;
+    .pill.danger { border-color: #ef4444; color: #f87171; }
+    .pill.ok { border-color: #10b981; color: #34d399; }
+
+    .stage { margin-top: 20px; padding-top: 20px; border-top: 1px solid rgba(255,255,255,0.1); }
+    .player-indicator { text-align: center; margin-bottom: 15px; font-weight: bold; color: #60a5fa; }
+    
+    .big-card {
+      background: linear-gradient(145deg, rgba(255,255,255,0.05), rgba(0,0,0,0.2));
+      border-radius: 20px; border: 2px dashed rgba(255,255,255,0.2);
+      padding: 40px 20px; text-align: center; min-height: 120px;
+      display: flex; flex-direction: column; justify-content: center; align-items: center;
     }
-    .role {
-      font-size: 34px;
-      letter-spacing: .5px;
-      font-weight: 800;
-      word-break: break-word;
+    .role { font-size: 32px; font-weight: 800; letter-spacing: 1px; color: #fff; }
+    .hint { margin-top: 10px; font-size: 14px; color: #94a3b8; font-style: italic; }
+
+    .list { display: grid; gap: 8px; margin-top: 15px; }
+    .item { 
+      display: flex; justify-content: space-between; padding: 12px; 
+      border-radius: 10px; background: rgba(255,255,255,0.04); 
     }
-    .hint { opacity: .85; margin-top: 6px; font-size: 13px; }
-    .muted { opacity: .75; font-size: 13px; }
-    .divider { height: 1px; background: rgba(255,255,255,0.12); margin: 14px 0; }
-    .list { display: grid; gap: 8px; margin-top: 10px; }
-    .item { display:flex; justify-content:space-between; gap:10px; padding:10px 12px; border-radius:12px; background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.12); }
-    .tag { font-weight: 700; opacity: .95; }
+    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-  <div class="wrap">
-    <div class="card">
-      <h1>Imposter Word Game</h1>
-      <p>
-        O‘yin: oddiy o‘yinchilarga <b>bir xil so‘z</b> beriladi, imposter(lar)ga esa <b>IMPOSTER</b> chiqadi.
-        Keyin hamma navbat bilan so‘zni aytmasdan tasvirlab beradi. Imposter o‘zini bildirmasdan mos gapirishga harakat qiladi.
-      </p>
 
+<div class="wrap">
+  <div class="card">
+    <h1>Imposter Word Game</h1>
+    <p>O‘yinchilarga bir xil so‘z beriladi, Imposterga esa <b>IMPOSTER</b> chiqadi.</p>
+
+    <div id="setupArea">
       <div class="row">
         <div>
           <label>O‘yinchi soni</label>
@@ -87,298 +83,168 @@
         <div>
           <label>Imposter soni</label>
           <select id="imposters">
-            <option value="1">1</option>
-            <option value="2">2</option>
+            <option value="1">1 ta Imposter</option>
+            <option value="2">2 ta Imposter</option>
+            <option value="3">3 ta Imposter</option>
           </select>
         </div>
       </div>
 
-      <div class="row" style="margin-top:12px;">
-        <div>
-          <label>So‘zlar ro‘yxati (har qatorga 1 ta so‘z)</label>
-          <textarea id="words"></textarea>
-          <div class="muted">Bo‘sh qoldirsang, default so‘zlar ishlatiladi.</div>
-        </div>
-        <div>
-          <label>Qo‘shimcha sozlamalar</label>
-          <div class="pill ok">✅ Har o‘yinchi navbat bilan role ko‘radi</div>
-          <div class="pill danger">⚠️ Telefonni boshqalarga ko‘rsatma</div>
-          <div class="pill">🕵️ Imposter: “IMPOSTER”</div>
-          <div class="pill">🗣️ Keyin: hamma gaplashadi</div>
-          <div class="divider"></div>
-          <div class="btns">
-            <button id="startBtn">Start</button>
-            <button id="resetBtn" title="Yangi o‘yin">Reset</button>
-          </div>
-        </div>
+      <label>So‘zlar ro‘yxati (har qatorga bitta)</label>
+      <textarea id="words" placeholder="Har bir qatorga bittadan so'z yozing..."></textarea>
+      
+      <div class="pill-box">
+        <div class="pill ok">✅ Navbat bilan ko‘rish</div>
+        <div class="pill danger">⚠️ Maxfiylikni saqlang</div>
+        <div class="pill">🕵️ Imposter: Bilmasligi kerak</div>
       </div>
 
-      <div class="stage" id="stage" style="display:none;">
-        <div class="divider"></div>
-        <div class="pill">Hozirgi o‘yinchi: <b id="who">1</b>/<span id="total">0</span></div>
+      <div class="btns">
+        <button id="startBtn">O‘yinni boshlash</button>
+      </div>
+    </div>
 
-        <div class="big">
-          <div>
-            <div class="role" id="roleText">—</div>
-            <div class="hint" id="roleHint">“Show role” ni bosing</div>
-          </div>
-        </div>
+    <div id="stage" class="stage hidden">
+      <div class="player-indicator">
+        O‘yinchi: <span id="who">1</span> / <span id="total">6</span>
+      </div>
 
-        <div class="btns">
-          <button id="showBtn">Show role</button>
-          <button id="hideBtn">Hide</button>
-          <button id="nextBtn">Next player →</button>
-          <button id="revealBtn">Reveal all</button>
-        </div>
+      <div class="big-card">
+        <div id="roleText" class="role">???</div>
+        <div id="roleHint" class="hint">Ko'rish uchun tugmani bosing</div>
+      </div>
 
-        <div id="revealArea" style="display:none;">
-          <div class="divider"></div>
-          <div class="list" id="revealList"></div>
-        </div>
+      <div class="btns">
+        <button id="showBtn" style="background:#10b981; color:white;">Ko‘rish</button>
+        <button id="hideBtn" class="hidden" style="background:#64748b; color:white;">Yashirish</button>
+        <button id="nextBtn" class="hidden" style="background:#3b82f6; color:white;">Keyingi o‘yinchi →</button>
+      </div>
+      
+      <div class="btns" style="margin-top:20px;">
+        <button id="revealBtn" style="background:transparent; border:1px solid #ef4444; color:#ef4444;">Hamma rollarni ochish</button>
+        <button id="resetBtn">Reset</button>
+      </div>
+
+      <div id="revealArea" class="hidden">
+        <div style="margin-top:20px; font-weight:bold; border-bottom:1px solid #333; padding-bottom:5px;">Natijalar:</div>
+        <div class="list" id="revealList"></div>
       </div>
     </div>
   </div>
+</div>
 
-  <script>
-    // --- Default word list (you can extend anytime)
-    const DEFAULT_WORDS = [
-      "Dasturchi", "Telefon", "Kofe", "Samolyot", "Kitob", "Maktab", "Bozor", "Mashina",
-      "Bank", "Test", "Bug", "Server", "Internet", "Kamera", "O‘qituvchi", "Shifokor",
-      "Futbol", "Musiqa", "Osh", "Pitsa", "Qor", "Quyosh", "Daryo", "Tog‘"
-    ];
+<script>
+  const DEFAULT_WORDS = ["Dasturchi", "Kofe", "Kitob", "Bozor", "Mashina", "Internet", "Osh", "Pitsa", "Tog‘", "Telefon", "Samolyot", "Shifokor", "Futbol"];
 
-    const el = (id) => document.getElementById(id);
+  // Elements
+  const setupArea = document.getElementById('setupArea');
+  const stage = document.getElementById('stage');
+  const wordsInput = document.getElementById('words');
+  const roleText = document.getElementById('roleText');
+  const roleHint = document.getElementById('roleHint');
+  const revealList = document.getElementById('revealList');
+  const revealArea = document.getElementById('revealArea');
 
-    const playersEl = el("players");
-    const impostersEl = el("imposters");
-    const wordsEl = el("words");
+  // Buttons
+  const startBtn = document.getElementById('startBtn');
+  const showBtn = document.getElementById('showBtn');
+  const hideBtn = document.getElementById('hideBtn');
+  const nextBtn = document.getElementById('nextBtn');
+  const revealBtn = document.getElementById('revealBtn');
+  const resetBtn = document.getElementById('resetBtn');
 
-    const startBtn = el("startBtn");
-    const resetBtn = el("resetBtn");
+  let roles = [];
+  let currentIndex = 0;
 
-    const stage = el("stage");
-    const whoEl = el("who");
-    const totalEl = el("total");
+  function init() {
+    wordsInput.value = DEFAULT_WORDS.join('\n');
+  }
 
-    const roleText = el("roleText");
-    const roleHint = el("roleHint");
-
-    const showBtn = el("showBtn");
-    const hideBtn = el("hideBtn");
-    const nextBtn = el("nextBtn");
-    const revealBtn = el("revealBtn");
-
-    const revealArea = el("revealArea");
-    const revealList = el("revealList");
-
-    // Game state
-    let roles = [];         // array of strings: "IMPOSTER" or word
-    let currentIndex = 0;   // 0-based
-    let revealedNow = false;
-
-    function parseWords() {
-      const raw = wordsEl.value.trim();
-      if (!raw) return [...DEFAULT_WORDS];
-      const list = raw.split("\n").map(s => s.trim()).filter(Boolean);
-      return list.length ? list : [...DEFAULT_WORDS];
+  startBtn.onclick = () => {
+    const pCount = parseInt(document.getElementById('players').value);
+    const iCount = parseInt(document.getElementById('imposters').value);
+    
+    if (iCount >= pCount - 1) {
+      alert("Imposterlar soni o'yinchilardan kam bo'lishi kerak!");
+      return;
     }
 
-    function shuffle(arr) {
-      for (let i = arr.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [arr[i], arr[j]] = [arr[j], arr[i]];
+    const words = wordsInput.value.split('\n').filter(w => w.trim() !== '');
+    const secretWord = words[Math.floor(Math.random() * words.length)];
+
+    roles = Array(pCount).fill(secretWord);
+    
+    // Assign Imposters
+    let assigned = 0;
+    while (assigned < iCount) {
+      let idx = Math.floor(Math.random() * pCount);
+      if (roles[idx] !== "IMPOSTER") {
+        roles[idx] = "IMPOSTER";
+        assigned++;
       }
-      return arr;
     }
 
-    function buildGame() {
-      const n = Math.max(3, Math.min(30, Number(playersEl.value || 6)));
-      const k = Math.min(Number(impostersEl.value || 1), n - 2); // keep at least 2 normal players
+    currentIndex = 0;
+    updateStage();
+    setupArea.classList.add('hidden');
+    stage.classList.remove('hidden');
+    revealArea.classList.add('hidden');
+  };
 
-      const words = parseWords();
-      const chosenWord = words[Math.floor(Math.random() * words.length)];
+  function updateStage() {
+    document.getElementById('who').textContent = currentIndex + 1;
+    document.getElementById('total').textContent = roles.length;
+    roleText.textContent = "???";
+    roleHint.textContent = "Telefonni o‘zingizga qaratib tugmani bosing";
+    
+    showBtn.classList.remove('hidden');
+    hideBtn.classList.add('hidden');
+    nextBtn.classList.add('hidden');
+  }
 
-      roles = Array(n).fill(chosenWord);
+  showBtn.onclick = () => {
+    const currentRole = roles[currentIndex];
+    roleText.textContent = currentRole;
+    roleHint.textContent = currentRole === "IMPOSTER" ? "Siz ayg'oqchisiz! Bildirmang." : "Bu so'zni boshqalarga aytmang.";
+    
+    showBtn.classList.add('hidden');
+    hideBtn.classList.remove('hidden');
+  };
 
-      // Pick k imposters randomly
-      const indices = shuffle([...Array(n).keys()]);
-      for (let i = 0; i < k; i++) roles[indices[i]] = "IMPOSTER";
-
-      currentIndex = 0;
-      revealedNow = false;
-
-      totalEl.textContent = String(n);
-      whoEl.textContent = String(currentIndex + 1);
-
-      roleText.textContent = "—";
-      roleHint.textContent = "Telefonni o‘zingizga qaratib “Show role” ni bosing";
-      revealArea.style.display = "none";
-      revealList.innerHTML = "";
-
-      stage.style.display = "block";
+  hideBtn.onclick = () => {
+    roleText.textContent = "---";
+    roleHint.textContent = "Tayyor bo'lsangiz keyingisiga o'ting";
+    hideBtn.classList.add('hidden');
+    
+    if (currentIndex < roles.length - 1) {
+      nextBtn.classList.remove('hidden');
+    } else {
+      roleHint.textContent = "Hamma ko'rib bo'ldi. O'yinni boshlang!";
     }
+  };
 
-    function showRole() {
-      if (!roles.length) return;
-      roleText.textContent = roles[currentIndex];
-      roleHint.textContent = roles[currentIndex] === "IMPOSTER"
-        ? "Sokin bo‘ling 😄 O‘zingizni bildirmang."
-        : "So‘zni aytmang, faqat tasvirlab bering.";
-      revealedNow = true;
-    }
+  nextBtn.onclick = () => {
+    currentIndex++;
+    updateStage();
+  };
 
-    function hideRole() {
-      roleText.textContent = "—";
-      roleHint.textContent = "Keyingi o‘yinchiga bering (yoki “Show role”)";
-      revealedNow = false;
-    }
+  revealBtn.onclick = () => {
+    revealArea.classList.remove('hidden');
+    revealList.innerHTML = roles.map((r, i) => `
+      <div class="item">
+        <span>O'yinchi ${i+1}</span>
+        <b style="color:${r === 'IMPOSTER' ? '#f87171' : '#34d399'}">${r}</b>
+      </div>
+    `).join('');
+  };
 
-    function nextPlayer() {
-      if (!roles.length) return;
-      currentIndex++;
-      if (currentIndex >= roles.length) currentIndex = 0;
-      whoEl.textContent = String(currentIndex + 1);
-      hideRole();
-    }
+  resetBtn.onclick = () => {
+    stage.classList.add('hidden');
+    setupArea.classList.remove('hidden');
+  };
 
-    function revealAll() {
-      if (!roles.length) return;
-      revealArea.style.display = "block";
-      revealList.innerHTML = "";
-      roles.forEach((r, i) => {
-        const row = document.createElement("div");
-        row.className = "item";
-        const left = document.createElement("div");
-        left.innerHTML = `<span class="tag">Player ${i + 1}</span>`;
-        const right = document.createElement("div");
-        right.innerHTML = r === "IMPOSTER" ? "🕵️ <b>IMPOSTER</b>" : `✅ <b>${escapeHtml(r)}</b>`;
-        row.appendChild(left);
-        row.appendChild(right);
-        revealList.appendChild(row);
-      });
-    }
+  init();
+</script>
 
-    function resetGame() {
-      roles = [];
-      currentIndex = 0;
-      revealedNow = false;
-      stage.style.display = "none";
-      revealArea.style.display = "none";
-    }
-
-    function escapeHtml(str) {
-      return str.replaceAll("&", "&amp;")
-                .replaceAll("<", "&lt;")
-                .replaceAll(">", "&gt;")
-                .replaceAll('"', "&quot;")
-                .replaceAll("'", "&#039;");
-    }
-
-    // Events
-    startBtn.addEventListener("click", buildGame);
-    resetBtn.addEventListener("click", resetGame);
-
-    showBtn.addEventListener("click", showRole);
-    hideBtn.addEventListener("click", hideRole);
-    nextBtn.addEventListener("click", nextPlayer);
-    revealBtn.addEventListener("click", revealAll);
-
-    // Prefill a nicer word list
-    wordsEl.value =
-`Dasturchi
-Bank
-Shifokor
-O‘qituvchi
-Samolyot
-Kamera
-Telefon
-Kitob
-Mashina
-Internet
-Shifokor
-O‘qituvchi
-Bankir
-Haydovchi
-Dizayner
-Muhandis
-Aktyor
-Qo‘shiqchi
-Sportchi
-Politsiyachi
-Sotuvchi
-Oshpaz
-Shifokor
-O‘qituvchi
-Bankir
-Haydovchi
-Dizayner
-Muhandis
-Aktyor
-Qo‘shiqchi
-Sportchi
-Politsiyachi
-Sotuvchi
-Oshpaz
-Maktab
-Universitet
-Bank
-Bozor
-Kasalxona
-Aeroport
-Metro
-Kutubxona
-Park
-Kafe
-Stadion
-Ofis
-Futbol
-Basketbol
-Shaxmat
-Musiqa
-Film
-Serial
-TikTok
-Instagram
-YouTube
-Konsert
-Kitob
-Raqs
-Quyosh
-Oy
-Yomg‘ir
-Qor
-Shamol
-Daryo
-Dengiz
-Tog‘
-O‘rmon
-Cho‘l
-Yulduz
-Bulut
-TikTok live
-Story
-Reels
-Selfie
-Filter
-Photoshop
-Spam
-DM
-Screenshot
-Like
-Follower
-Trending
-Hashtag
-Prank
-Kringe
-Drama
-Ex
-Influencer
-Bloger
-Fake
-Toxic
-Crush
-Red flag
-Green flag`;
-  </script>
 </body>
 </html>
