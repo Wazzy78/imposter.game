@@ -19,7 +19,25 @@
     .btn-primary { background: #3b82f6; color: white; }
     .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
     .btn-secondary { background: rgba(255,255,255,0.1); color: white; }
-    .big-display { background: rgba(0,0,0,0.3); border: 2px dashed rgba(255,255,255,0.15); border-radius: 16px; padding: 40px 20px; text-align: center; margin: 20px 0; }
+    .btn-next { background: #10b981; color: white; }
+    .btn-next:hover { background: #059669; transform: translateY(-2px); }
+
+    .big-display {
+      border-radius: 16px; padding: 40px 20px; text-align: center; margin: 20px 0;
+      transition: all 0.4s ease;
+    }
+    .card-hidden {
+      background: rgba(0,0,0,0.3);
+      border: 2px dashed rgba(255,255,255,0.15);
+    }
+    .card-shown {
+      background: rgba(59,130,246,0.15);
+      border: 2px solid rgba(59,130,246,0.5);
+    }
+    .card-imposter {
+      background: rgba(239,68,68,0.15);
+      border: 2px solid rgba(239,68,68,0.6);
+    }
     .role-name { font-size: 32px; font-weight: 800; color: #fff; min-height: 40px; }
     .status-msg { font-size: 14px; color: #94a3b8; margin-top: 10px; }
     .player-nav { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; font-weight: bold; }
@@ -32,6 +50,7 @@
   <h1>Imposter Game</h1>
   <p>So'zni toping, lekin Imposterga bildirmang!</p>
 
+  <!-- SETUP -->
   <div id="setup">
     <div class="row">
       <div>
@@ -46,56 +65,58 @@
         </select>
       </div>
     </div>
-
     <span class="settings-toggle" onclick="document.getElementById('wordBox').classList.toggle('hidden')">
       ⚙️ So'zlar ro'yxatini tahrirlash
     </span>
     <div id="wordBox" class="hidden">
       <textarea id="wordsInput" rows="5"></textarea>
     </div>
-
     <button class="btn-primary" onclick="startGame()">O'yinni boshlash</button>
     <div class="word-counter" id="queueInfo"></div>
   </div>
 
+  <!-- GAME -->
   <div id="game" class="hidden">
     <div class="player-nav">
       O'yinchi: <span id="curP">1</span> / <span id="totalP">6</span>
     </div>
 
-    <div class="big-display">
+    <div id="cardDisplay" class="big-display card-hidden">
       <div id="roleText" class="role-name">???</div>
       <div id="roleHint" class="status-msg">Ko'rish uchun tugmani bosing</div>
     </div>
 
-    <button id="mainBtn" class="btn-primary" onclick="handleFlow()">Ko'rish</button>
+    <!-- Step 1: Ko'rish -->
+    <button id="btnShow" class="btn-primary" onclick="showRole()">👁 Ko'rish</button>
+
+    <!-- Step 2: Yashirish (faqat karta ochiq paytida ko'rinadi) -->
+    <button id="btnHide" class="btn-secondary hidden" onclick="hideRole()">🙈 Yashirish</button>
+
+    <!-- Step 3: Next Player (faqat yashirilgandan keyin ko'rinadi) -->
+    <button id="btnNext" class="btn-next hidden" onclick="nextPlayer()">➡️ Next Player</button>
+
     <button class="btn-secondary" onclick="resetGame()" style="margin-top: 20px; font-size: 12px; padding: 8px;">O'yinni tugatish</button>
   </div>
 </div>
 
 <script>
   const WORD_BANK = [
-    [
-     "ignor", "ex", "green flag", "Telefon", "Statistika", "Kompyuter", "Sessiya", "Crush", "Merlin", "Sirk",
-    "Sun'iy intellekt", "Metro", "Sehrgar", "Antarktida", "Toy Story", "Moana", "Samsung", "Pick me","Inflyatsiya", "Motivatsiya", "Iran", "Dubay", "yaponiya", "Mototsikl", "Cobalt", "Gentra",
-    "The Lion King", "Frozen", "Shrek", "Minions", "Joker", "Twilight", "Masha", "Apple", "Osh", "manti" ,"avakado", "psixologiya", "Trump", "Epstein Island", "Harry Potter", "Titanic", "Avatar", "Spider-Man",
-    "Batman", "Finding Nemo", "Pleysteyshin", "instagram", "UZSWLU", "Matematika", "Twitter", "Falsafa", "TikTok", "Qaynona", "Bloger", "Hitler", "Kung Fu Panda", "Home Alone", "Selfi", "Prezident", "Robot",
-   "Cho'l", "Mikroskop", "Kosmonavt", "Shokolad", "Lift", "Piramida", "Virus", "Gitara", "Akula", "Parashyut", "Dollar", "Aladdin", "CS2", "Netflix", "YouTube", "Google", "Tesla", "ChatGPT",
-   "Startap", "Kriptovalyuta", "Bitcoin", "Blockchain", "Hacker", "Programmist", "Startup", "Influencer", "Podcast", "Mem", "Reels", "Stream", "Gamer", "PUBG", "Minecraft", "GTA",
-   "Fortnite", "Marvel", "Deadpool", "Iron Man", "Hulk", "Doctor Strange", "Star Wars", "Jurassic Park", "Matrix", "Transformers", "Barbie", "Oppenheimer", "Wednesday",
-   "Stranger Things", "Naruto", "Attack on Titan", "One Piece", "Demon Slayer", "Pokemon", "Disney", "Pixar", "Amazon", "Alibaba", "Dubai Mall", "Times Square", "Paris", "London",
-   "New York", "Seul", "Tokyo", "Samuray", "Ninja", "Kimono", "Sushi", "Ramen", "Burger" ,"Pizza", "Hotdog", "Cappuccino", "Latte", "Espresso", "Fitness", "Yoga", "Meditatsiya",
-   "Psixolog", "Tadbirkor", "Investor", "Marketing", "Reklama", "Brend", "Trend", "Challenge","Vlog", "Hashtag", "Emoji", "Metaverse", "VR", "Robototexnika", "Nanotexnologiya",
-   "Laboratoriya", "Astronomiya", "Galaktika", "Qora tuynuk", "Raketta", "Mars", "Saturn", "Lavash", "Somsa", "Palov", "Lag‘mon", "Shashlik", "Coca-Cola", "Pepsi", "Fanta", "Sprite",
-   "Choy", "Kofe", "iPhone", "Xiaomi", "Huawei", "Nokia", "Telegram", "Ferrari", "Lamborghini", "BMW", "Mercedes", "Malibu", "Tracker", "Onix", "Superman",
-   "Hermione", "Ron", "Dumbledore", "Sasuke", "Sakura", "Kakashi", "Banana", "Mango", "Ananas", "Pianino", "Baraban", "Skripka", "Samolyot", "Vertolyot",
-   "Internet", "Oy", "Quyosh", "Pingvin", "Delfin", "Kit", "O‘rmon", "Tog‘", "Okean" , "Moliya"
-] 
-    
+    "ignor", "ex", "green flag", "Telefon", "Statistika", "Kompyuter", "Sessiya", "Crush", "Merlin", "Sirk", "Sun'iy intellekt", "Metro", "Sehrgar", "Antarktida", "Toy Story", "Moana",
+    "Samsung", "Pick me", "Inflyatsiya", "Motivatsiya", "Iran", "Dubay", "yaponiya", "Mototsikl", "Cobalt", "Gentra", "The Lion King", "Frozen", "Shrek", "Minions", "Joker", "Twilight",
+    "Masha", "Apple", "Osh", "manti", "avakado", "psixologiya", "Trump", "Epstein Island", "Harry Potter", "Titanic", "Avatar", "Spider-Man", "Batman", "Finding Nemo",
+    "Pleysteyshin", "instagram", "UZSWLU", "Matematika", "Twitter", "Falsafa", "TikTok", "Qaynona", "Bloger", "Hitler", "Kung Fu Panda", "Home Alone",
+    "Selfi", "Prezident", "Robot", "Cho'l", "Mikroskop", "Kosmonavt", "Shokolad", "Lift", "Piramida", "Virus", "Gitara", "Akula", "Parashyut", "Dollar", "Aladdin", "CS2",
+    "Netflix", "YouTube", "Google", "Tesla", "ChatGPT", "Startap", "Kriptovalyuta", "Bitcoin", "Blockchain", "Hacker", "Programmist", "Dasturchi", "Startup", "Influencer", "Podcast", "Mem",
+    "Reels", "Stream", "Gamer", "PUBG", "Minecraft", "GTA", "Fortnite", "Marvel", "Deadpool", "Iron Man", "Hulk", "Doctor Strange", "Star Wars", "Jurassic Park", "Matrix", "Transformers",
+    "Barbie", "Oppenheimer", "Wednesday", "Stranger Things", "Naruto", "Attack on Titan", "One Piece", "Demon Slayer", "Pokemon", "Disney", "Pixar", "Amazon", "Alibaba", "Dubai Mall", "Times Square",
+    "Paris", "London", "New York", "Seul", "Tokyo", "Samuray", "Ninja", "Kimono", "Sushi", "Ramen", "Burger", "Pizza", "Hotdog", "Cappuccino", "Latte", "Espresso",
+    "Fitness", "Yoga", "Meditatsiya", "Psixolog", "Tadbirkor", "Investor", "Marketing", "Reklama", "Brend", "Trend", "Challenge", "Vlog", "Hashtag", "Emoji", "Metaverse", "VR", "Robototexnika",
+    "Nanotexnologiya", "Laboratoriya", "Astronomiya", "Galaktika", "Qora tuynuk", "Raketta", "Mars", "Saturn"
   ];
 
   let wordQueue = [];
   let lastUsedWord = null;
+  let state = { players: [], current: 0 };
 
   function shuffle(arr) {
     const a = [...arr];
@@ -116,36 +137,22 @@
   }
 
   function pickNextWord(words) {
-    if (wordQueue.length === 0) {
-      wordQueue = buildQueue(words);
-    }
+    if (wordQueue.length === 0) wordQueue = buildQueue(words);
     const word = wordQueue.shift();
     lastUsedWord = word;
     return word;
   }
 
-  let state = { players: [], current: 0, showing: false };
-
   function getWords() {
     return document.getElementById('wordsInput').value
-      .split('\n')
-      .map(w => w.trim())
-      .filter(Boolean)
+      .split('\n').map(w => w.trim()).filter(Boolean)
       .filter((w, i, arr) => arr.indexOf(w) === i);
   }
 
   function init() {
     const unique = WORD_BANK.filter((w, i, arr) => arr.indexOf(w) === i);
     document.getElementById('wordsInput').value = unique.join('\n');
-    updateQueueInfo(unique);
-  }
-
-  function updateQueueInfo(words) {
-    const total = words ? words.length : getWords().length;
-    document.getElementById('queueInfo').textContent =
-      wordQueue.length > 0
-        ? `Navbatda: ${wordQueue.length} so'z qoldi (jami ${total})`
-        : `Jami ${total} ta so'z`;
+    document.getElementById('queueInfo').textContent = `Jami ${unique.length} ta so'z`;
   }
 
   function startGame() {
@@ -167,46 +174,77 @@
     }
 
     state.current = 0;
-    state.showing = false;
     document.getElementById('setup').classList.add('hidden');
     document.getElementById('game').classList.remove('hidden');
-    updateUI();
+    renderWaiting();
   }
 
-  function handleFlow() {
-    const btn = document.getElementById('mainBtn');
-    if (!state.showing) {
-      document.getElementById('roleText').textContent = state.players[state.current];
-      document.getElementById('roleHint').textContent = "Yashirish uchun bosing";
-      btn.textContent = "Yashirish";
-      state.showing = true;
-    } else {
-      if (state.current < state.players.length - 1) {
-        state.current++;
-        state.showing = false;
-        updateUI();
-      } else {
-        document.getElementById('roleText').textContent = "Tayyor!";
-        document.getElementById('roleHint').textContent = "Hamma ko'rib bo'ldi. O'yinni boshlang!";
-        btn.classList.add('hidden');
-      }
-    }
-  }
-
-  function updateUI() {
+  // State: waiting (card closed, only Show button visible)
+  function renderWaiting() {
     document.getElementById('curP').textContent = state.current + 1;
     document.getElementById('totalP').textContent = state.players.length;
-    document.getElementById('roleText').textContent = "???";
-    document.getElementById('roleHint').textContent = "Ko'rish uchun tugmani bosing";
-    const btn = document.getElementById('mainBtn');
-    btn.textContent = "Ko'rish";
-    btn.classList.remove('hidden');
+
+    const card = document.getElementById('cardDisplay');
+    card.className = 'big-display card-hidden';
+    document.getElementById('roleText').textContent = '???';
+    document.getElementById('roleHint').textContent = 'Ko\'rish uchun tugmani bosing';
+
+    document.getElementById('btnShow').classList.remove('hidden');
+    document.getElementById('btnHide').classList.add('hidden');
+    document.getElementById('btnNext').classList.add('hidden');
+  }
+
+  // Step 1: Show role
+  function showRole() {
+    const role = state.players[state.current];
+    const isImposter = role === "IMPOSTER";
+
+    const card = document.getElementById('cardDisplay');
+    card.className = 'big-display ' + (isImposter ? 'card-imposter' : 'card-shown');
+
+    document.getElementById('roleText').textContent = role;
+    document.getElementById('roleHint').textContent = isImposter
+      ? '🕵️ Siz Impostersiz! Hech kimga bildirmang!'
+      : '✅ So\'zni eslab qoling!';
+
+    document.getElementById('btnShow').classList.add('hidden');
+    document.getElementById('btnHide').classList.remove('hidden');
+    document.getElementById('btnNext').classList.add('hidden');
+  }
+
+  // Step 2: Hide role
+  function hideRole() {
+    const card = document.getElementById('cardDisplay');
+    card.className = 'big-display card-hidden';
+    document.getElementById('roleText').textContent = '???';
+    document.getElementById('roleHint').textContent = 'Yashirildi ✓';
+
+    document.getElementById('btnShow').classList.add('hidden');
+    document.getElementById('btnHide').classList.add('hidden');
+    document.getElementById('btnNext').classList.remove('hidden');
+  }
+
+  // Step 3: Next player
+  function nextPlayer() {
+    if (state.current < state.players.length - 1) {
+      state.current++;
+      renderWaiting();
+    } else {
+      // All players done
+      const card = document.getElementById('cardDisplay');
+      card.className = 'big-display card-shown';
+      document.getElementById('roleText').textContent = '🎮 Tayyor!';
+      document.getElementById('roleHint').textContent = 'Hamma ko\'rib bo\'ldi. O\'yinni boshlang!';
+      document.getElementById('btnShow').classList.add('hidden');
+      document.getElementById('btnHide').classList.add('hidden');
+      document.getElementById('btnNext').classList.add('hidden');
+      document.getElementById('curP').textContent = state.players.length;
+    }
   }
 
   function resetGame() {
     document.getElementById('setup').classList.remove('hidden');
     document.getElementById('game').classList.add('hidden');
-    updateQueueInfo();
   }
 
   init();
