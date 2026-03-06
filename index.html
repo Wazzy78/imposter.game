@@ -144,10 +144,12 @@
   }
 
   function getWords() {
-    return document.getElementById('wordsInput').value
-      .split('\n').map(w => w.trim()).filter(Boolean)
-      .filter((w, i, arr) => arr.indexOf(w) === i);
-  }
+  return document.getElementById('wordsInput').value
+    .split(/[\n,]/)          // <-- vergul YOKI yangi qator
+    .map(w => w.trim())
+    .filter(Boolean)
+    .filter((w, i, arr) => arr.indexOf(w) === i);
+}
 
   function init() {
     const unique = WORD_BANK.filter((w, i, arr) => arr.indexOf(w) === i);
