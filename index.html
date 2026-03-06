@@ -10,24 +10,20 @@
     .card { background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.12); border-radius: 20px; padding: 24px; width: 90%; max-width: 500px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); backdrop-filter: blur(10px); }
     h1 { margin: 0 0 10px; font-size: 24px; text-align: center; color: #fff; }
     p { font-size: 14px; text-align: center; opacity: 0.7; margin-bottom: 20px; }
-    
     .row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 15px; }
     label { display: block; font-size: 12px; margin-bottom: 6px; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; }
     input, select, textarea { width: 100%; box-sizing: border-box; padding: 12px; border-radius: 12px; border: 1px solid rgba(255,255,255,0.1); background: rgba(0,0,0,0.2); color: #fff; font-size: 16px; outline: none; }
-    
     .settings-toggle { color: #3b82f6; font-size: 13px; cursor: pointer; text-decoration: underline; margin-bottom: 10px; display: inline-block; }
     .hidden { display: none !important; }
-    
     button { width: 100%; padding: 14px; border-radius: 12px; border: none; cursor: pointer; font-weight: 700; font-size: 16px; transition: 0.3s; margin-top: 10px; }
     .btn-primary { background: #3b82f6; color: white; }
     .btn-primary:hover { background: #2563eb; transform: translateY(-2px); }
     .btn-secondary { background: rgba(255,255,255,0.1); color: white; }
-
     .big-display { background: rgba(0,0,0,0.3); border: 2px dashed rgba(255,255,255,0.15); border-radius: 16px; padding: 40px 20px; text-align: center; margin: 20px 0; }
     .role-name { font-size: 32px; font-weight: 800; color: #fff; min-height: 40px; }
     .status-msg { font-size: 14px; color: #94a3b8; margin-top: 10px; }
-    
     .player-nav { display: flex; align-items: center; justify-content: center; gap: 15px; margin-bottom: 15px; font-weight: bold; }
+    .word-counter { font-size: 11px; color: #475569; text-align: center; margin-top: 6px; }
   </style>
 </head>
 <body>
@@ -39,7 +35,7 @@
   <div id="setup">
     <div class="row">
       <div>
-        <label>O‘yinchilar</label>
+        <label>O'yinchilar</label>
         <input id="pCount" type="number" value="6" min="3">
       </div>
       <div>
@@ -52,13 +48,14 @@
     </div>
 
     <span class="settings-toggle" onclick="document.getElementById('wordBox').classList.toggle('hidden')">
-      ⚙️ So‘zlar ro‘yxatini tahrirlash
+      ⚙️ So'zlar ro'yxatini tahrirlash
     </span>
     <div id="wordBox" class="hidden">
       <textarea id="wordsInput" rows="5"></textarea>
     </div>
 
-    <button class="btn-primary" onclick="startGame()">O‘yinni boshlash</button>
+    <button class="btn-primary" onclick="startGame()">O'yinni boshlash</button>
+    <div class="word-counter" id="queueInfo"></div>
   </div>
 
   <div id="game" class="hidden">
@@ -71,40 +68,101 @@
       <div id="roleHint" class="status-msg">Ko'rish uchun tugmani bosing</div>
     </div>
 
-    <button id="mainBtn" class="btn-primary" onclick="handleFlow()">Ko‘rish</button>
+    <button id="mainBtn" class="btn-primary" onclick="handleFlow()">Ko'rish</button>
     <button class="btn-secondary" onclick="resetGame()" style="margin-top: 20px; font-size: 12px; padding: 8px;">O'yinni tugatish</button>
   </div>
 </div>
 
 <script>
-  // Medium va Professional darajadagi so'zlar
   const WORD_BANK = [
-    "ignor", "ex", "green flag", "Telefon", "Statistika", "Kompyuter", "Toxic" , "Crush", "Merlin", "Sirk", "Sun’iy intellekt", "Metro", "Sehrgar", "Antarktida" , "Toy Story",  "Moana", 
-    "Samsung", "Sun'iy intellekt", "Pick me", "Inflyatsiya", "Motivatsiya", "Iran" , "Dubay" , "yaponiya" , "Mototsikl" , "Cobalt" , "Gentra", "The Lion King", "Frozen",  "Shrek", "Minions",  "Joker" ,  "Twilight",  
-    "Masha", "Situationship", "Osh", "manti", "avakado", "psixologiya", "Trump" , "Epstein Island" , "Harry Potter" , "Titanic", "Avatar", "Spider-Man", "Batman","Finding Nemo",
-    "salbiy ustanovka", "instagram", "Shermuhammad aka" , " Farhod aka" , "Twitter", "Falsafa", "TikTok live", "Qaynona" , "Bloger" , "Hitler" ,  "Kung Fu Panda", "Home Alone",
-    "Selfi", "Prezident", "Robot", "Cho‘l", "Mikroskop", "Kosmonavt", "Shokolad", "Lift", "Piramida", "Virus", "Gitara", "Akula", "Parashyut", "Dollar", "Antarktida",   "Aladdin"
+    [
+     "ignor", "ex", "green flag", "Telefon", "Statistika", "Kompyuter", "Sessiya", "Crush", "Merlin", "Sirk",
+    "Sun'iy intellekt", "Metro", "Sehrgar", "Antarktida", "Toy Story", "Moana", "Samsung", "Pick me","Inflyatsiya", "Motivatsiya", "Iran", "Dubay", "yaponiya", "Mototsikl", "Cobalt", "Gentra",
+    "The Lion King", "Frozen", "Shrek", "Minions", "Joker", "Twilight", "Masha", "Apple", "Osh", "manti" ,"avakado", "psixologiya", "Trump", "Epstein Island", "Harry Potter", "Titanic", "Avatar", "Spider-Man",
+    "Batman", "Finding Nemo", "Pleysteyshin", "instagram", "UZSWLU", "Matematika", "Twitter", "Falsafa", "TikTok", "Qaynona", "Bloger", "Hitler", "Kung Fu Panda", "Home Alone", "Selfi", "Prezident", "Robot",
+   "Cho'l", "Mikroskop", "Kosmonavt", "Shokolad", "Lift", "Piramida", "Virus", "Gitara", "Akula", "Parashyut", "Dollar", "Aladdin", "CS2", "Netflix", "YouTube", "Google", "Tesla", "ChatGPT",
+   "Startap", "Kriptovalyuta", "Bitcoin", "Blockchain", "Hacker", "Programmist", "Startup", "Influencer", "Podcast", "Mem", "Reels", "Stream", "Gamer", "PUBG", "Minecraft", "GTA",
+   "Fortnite", "Marvel", "Deadpool", "Iron Man", "Hulk", "Doctor Strange", "Star Wars", "Jurassic Park", "Matrix", "Transformers", "Barbie", "Oppenheimer", "Wednesday",
+   "Stranger Things", "Naruto", "Attack on Titan", "One Piece", "Demon Slayer", "Pokemon", "Disney", "Pixar", "Amazon", "Alibaba", "Dubai Mall", "Times Square", "Paris", "London",
+   "New York", "Seul", "Tokyo", "Samuray", "Ninja", "Kimono", "Sushi", "Ramen", "Burger" ,"Pizza", "Hotdog", "Cappuccino", "Latte", "Espresso", "Fitness", "Yoga", "Meditatsiya",
+   "Psixolog", "Tadbirkor", "Investor", "Marketing", "Reklama", "Brend", "Trend", "Challenge","Vlog", "Hashtag", "Emoji", "Metaverse", "VR", "Robototexnika", "Nanotexnologiya",
+   "Laboratoriya", "Astronomiya", "Galaktika", "Qora tuynuk", "Raketta", "Mars", "Saturn", "Lavash", "Somsa", "Palov", "Lag‘mon", "Shashlik", "Coca-Cola", "Pepsi", "Fanta", "Sprite",
+   "Choy", "Kofe", "iPhone", "Xiaomi", "Huawei", "Nokia", "Telegram", "Ferrari", "Lamborghini", "BMW", "Mercedes", "Malibu", "Tracker", "Onix", "Superman",
+   "Hermione", "Ron", "Dumbledore", "Sasuke", "Sakura", "Kakashi", "Banana", "Mango", "Ananas", "Pianino", "Baraban", "Skripka", "Samolyot", "Vertolyot",
+   "Internet", "Oy", "Quyosh", "Pingvin", "Delfin", "Kit", "O‘rmon", "Tog‘", "Okean" , "Moliya"
+] 
+    
   ];
+
+  let wordQueue = [];
+  let lastUsedWord = null;
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function buildQueue(words) {
+    let q = shuffle(words);
+    if (lastUsedWord && q[0] === lastUsedWord && q.length > 1) {
+      const swapIdx = Math.floor(Math.random() * (q.length - 1)) + 1;
+      [q[0], q[swapIdx]] = [q[swapIdx], q[0]];
+    }
+    return q;
+  }
+
+  function pickNextWord(words) {
+    if (wordQueue.length === 0) {
+      wordQueue = buildQueue(words);
+    }
+    const word = wordQueue.shift();
+    lastUsedWord = word;
+    return word;
+  }
 
   let state = { players: [], current: 0, showing: false };
 
+  function getWords() {
+    return document.getElementById('wordsInput').value
+      .split('\n')
+      .map(w => w.trim())
+      .filter(Boolean)
+      .filter((w, i, arr) => arr.indexOf(w) === i);
+  }
+
   function init() {
-    document.getElementById('wordsInput').value = WORD_BANK.join('\n');
+    const unique = WORD_BANK.filter((w, i, arr) => arr.indexOf(w) === i);
+    document.getElementById('wordsInput').value = unique.join('\n');
+    updateQueueInfo(unique);
+  }
+
+  function updateQueueInfo(words) {
+    const total = words ? words.length : getWords().length;
+    document.getElementById('queueInfo').textContent =
+      wordQueue.length > 0
+        ? `Navbatda: ${wordQueue.length} so'z qoldi (jami ${total})`
+        : `Jami ${total} ta so'z`;
   }
 
   function startGame() {
+    const words = getWords();
+    if (words.length < 2) { alert("Kamida 2 ta so'z kiriting!"); return; }
+
     const p = parseInt(document.getElementById('pCount').value);
-    const i = parseInt(document.getElementById('iCount').value);
-    const words = document.getElementById('wordsInput').value.split('\n').filter(w => w.trim());
-    const secret = words[Math.floor(Math.random() * words.length)];
+    const iCount = parseInt(document.getElementById('iCount').value);
+    const secret = pickNextWord(words);
 
     state.players = Array(p).fill(secret);
-    let impCount = 0;
-    while(impCount < i) {
+    let impAssigned = 0;
+    while (impAssigned < iCount) {
       let idx = Math.floor(Math.random() * p);
-      if(state.players[idx] !== "IMPOSTER") {
+      if (state.players[idx] !== "IMPOSTER") {
         state.players[idx] = "IMPOSTER";
-        impCount++;
+        impAssigned++;
       }
     }
 
@@ -117,15 +175,13 @@
 
   function handleFlow() {
     const btn = document.getElementById('mainBtn');
-    if(!state.showing) {
-      // Show role
+    if (!state.showing) {
       document.getElementById('roleText').textContent = state.players[state.current];
       document.getElementById('roleHint').textContent = "Yashirish uchun bosing";
       btn.textContent = "Yashirish";
       state.showing = true;
     } else {
-      // Hide and move next
-      if(state.current < state.players.length - 1) {
+      if (state.current < state.players.length - 1) {
         state.current++;
         state.showing = false;
         updateUI();
@@ -143,13 +199,14 @@
     document.getElementById('roleText').textContent = "???";
     document.getElementById('roleHint').textContent = "Ko'rish uchun tugmani bosing";
     const btn = document.getElementById('mainBtn');
-    btn.textContent = "Ko‘rish";
+    btn.textContent = "Ko'rish";
     btn.classList.remove('hidden');
   }
 
   function resetGame() {
     document.getElementById('setup').classList.remove('hidden');
     document.getElementById('game').classList.add('hidden');
+    updateQueueInfo();
   }
 
   init();
